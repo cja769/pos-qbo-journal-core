@@ -1,0 +1,6 @@
+package io.github.thirdcoast.qbo.model;
+
+public enum AccountRole {
+    SALES_REVENUE, DISCOUNTS, RETURNS, SALES_TAX_PAYABLE, TIPS_PAYABLE,
+    GIFT_CARD_LIABILITY, PROCESSING_FEES, TENDER_CLEARING
+}
