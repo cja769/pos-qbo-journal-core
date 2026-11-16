@@ -18,8 +18,21 @@ public final class SummaryFingerprint {
                 .append(s.grossSales().currency());
         s.tenders().entrySet().stream().sorted(java.util.Map.Entry.comparingByKey())
                 .forEach(e -> canonical.append('|').append(e.getKey()).append('=').append(e.getValue().amount()));
+        return hash(canonical.toString());
+    }
+
+    static String sha256(DailySalesSummary summary, io.github.thirdcoast.qbo.model.JournalEntry entry) {
+        var canonical = new StringBuilder(sha256(summary));
+        entry.lines().stream()
+                .map(line -> line.accountId() + "|" + line.postingType() + "|" + line.amount().amount())
+                .sorted()
+                .forEach(line -> canonical.append('\n').append(line));
+        return hash(canonical.toString());
+    }
+
+    private static String hash(String canonical) {
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
     }
 }

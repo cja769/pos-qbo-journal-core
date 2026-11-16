@@ -39,3 +39,24 @@ mvn clean install
 ```
 
 The connector repositories consume `io.github.cja769:pos-qbo-journal-core:0.1.0-SNAPSHOT`.
+
+## Intuit transport
+
+`IntuitJournalClient` uses the supported QuickBooks Accounting API and verifies the
+configured realm's company name before a live job proceeds. Each managed daily
+journal uses a deterministic document number and an ownership marker. The client
+verifies posting date and accounting lines after saving, rejects conflicting
+matches or edited lines, and uses the current SyncToken for updates. The dry-run
+mode creates the proposed payload and can look up existing managed journals.
+
+Seed the Intuit refresh token in `SYNC_DATA_DIRECTORY/qbo-<realm-id>.token`
+with owner-only permissions after authorizing the accounting scope. The sync
+rotates that file atomically on the mounted data volume. Run only one instance
+per data volume and OAuth grant. Avoid granting the same Intuit connection to a
+second token rotator. Keep the data volume and client secret outside source control.
+
+Live posting requires a verified account map and an explicit first posting date.
+Before enabling it, tie out dry runs to source reports and choose a cutover after
+any day covered by another integration or manual period journal. Bank-feed matching,
+processor settlement reconciliation, and statement reconciliation are outside the
+QuickBooks journal API workflow.
