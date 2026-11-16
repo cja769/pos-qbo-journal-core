@@ -23,7 +23,7 @@ public record DailySalesSummary(
         if (source == null || source.isBlank()) throw new IllegalArgumentException("source is required");
         if (locationId == null || locationId.isBlank()) throw new IllegalArgumentException("locationId is required");
         if (businessDate == null) throw new IllegalArgumentException("businessDate is required");
-        if (tenders == null || tenders.isEmpty()) throw new IllegalArgumentException("at least one tender is required");
+        if (tenders == null) throw new IllegalArgumentException("tenders are required");
         tenders = Map.copyOf(tenders);
     }
 }

@@ -26,6 +26,11 @@ public final class JournalEntryFactory {
     }
 
     private void add(ArrayList<JournalLine> lines, String account, JournalLine.PostingType type, Money amount, String description) {
-        if (amount.amount().signum() != 0) lines.add(new JournalLine(account, type, amount, description));
+        if (amount.isNegative()) {
+            lines.add(new JournalLine(account, type == DEBIT ? CREDIT : DEBIT,
+                    new Money(amount.amount().negate(), amount.currency()), description));
+        } else if (amount.amount().signum() > 0) {
+            lines.add(new JournalLine(account, type, amount, description));
+        }
     }
 }

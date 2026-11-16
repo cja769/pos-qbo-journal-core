@@ -16,8 +16,8 @@ public final class JournalSyncService {
         this.client = client; this.factory = factory; this.accounts = accounts; this.receipts = receipts; this.clock = clock;
     }
     public SyncResult sync(DailySalesSummary summary) {
-        var fingerprint = SummaryFingerprint.sha256(summary);
         var journal = factory.create(summary, accounts);
+        var fingerprint = SummaryFingerprint.sha256(summary, journal);
         var existing = client.findByIdempotencyKey(summary.idempotencyKey());
         if (existing.isEmpty()) {
             var id = client.createJournalEntry(journal, fingerprint);
