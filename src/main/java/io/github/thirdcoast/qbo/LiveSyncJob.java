@@ -50,7 +50,7 @@ public final class LiveSyncJob {
         if (posting && selectedDate != null && selectedDate.isBefore(firstPostDate)) {
             throw new IllegalArgumentException("Selected date precedes the posting start date");
         }
-        var accounts = loadMapping(Path.of(required(config, "SYNC_ACCOUNT_MAPPING_FILE")));
+        var accounts = loadMapping(Path.of(required(config, "SYNC_ACCOUNT_MAPPING_FILE")), posting);
         var dates = selectedDate == null ? new ReconciliationPlanner().datesToVerify(today)
                 : java.util.List.of(selectedDate);
 
@@ -108,11 +108,17 @@ public final class LiveSyncJob {
         return new IntuitJournalClient(http, realm, environment.equals("sandbox"), oauth::authorization);
     }
 
-    private static AccountMapping loadMapping(Path path) {
+    private static AccountMapping loadMapping(Path path, boolean posting) {
         try {
             var root = new ObjectMapper().readTree(path.toFile());
             var accounts = new EnumMap<AccountRole, String>(AccountRole.class);
-            for (var role : AccountRole.values()) accounts.put(role, accountId(root.path("accounts"), role.name()));
+            var configuredAccounts = root.path("accounts");
+            if (!configuredAccounts.isObject()) throw new IllegalArgumentException("Missing accounts mapping");
+            for (var role : AccountRole.values()) {
+                if (posting || configuredAccounts.has(role.name())) {
+                    accounts.put(role, accountId(configuredAccounts, role.name()));
+                }
+            }
             var tenders = new HashMap<String, String>();
             var configured = root.path("tenders");
             if (!configured.isObject()) throw new IllegalArgumentException("Missing tenders mapping");
